@@ -1,0 +1,18 @@
+# Flutter/Dart
+.dart_tool/
+.packages
+build/
+*.iml
+*.ipr
+*.iws
+
+# Sensitive files
+android/app/google-services.json
+
+# IDE-specific
+.idea/
+.vscode/
+
+# Misc
+*.lock
+*.log
