@@ -1,6 +1,7 @@
 import 'package:fit_ai/providers/plan_provider.dart';
 import 'package:fit_ai/providers/user_provider.dart';
 import 'package:fit_ai/screens/chat_assistant_screen.dart';
+import 'package:fit_ai/screens/profile_screen.dart';
 import 'package:fit_ai/screens/progress_screen.dart';
 import 'package:fit_ai/screens/settings_screen.dart';
 import 'package:fit_ai/screens/workout_detail_screen.dart';
@@ -54,6 +55,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       appBar: AppBar(
         title: const Text('FitAI'),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.person),
+            tooltip: 'Profile',
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const ProfileScreen()),
+              );
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.settings),
             tooltip: 'Settings',

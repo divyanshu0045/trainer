@@ -1,4 +1,5 @@
 import 'package:fit_ai/providers/notification_provider.dart';
+import 'package:fit_ai/services/storage_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -10,6 +11,10 @@ class SettingsScreen extends ConsumerStatefulWidget {
 }
 
 class _SettingsScreenState extends ConsumerState<SettingsScreen> {
+  final StorageService _storageService = StorageService();
+  bool _isLoading = true;
+
+  // Default values
   bool _workoutNotifications = true;
   TimeOfDay _workoutTime = const TimeOfDay(hour: 8, minute: 0);
 
@@ -22,7 +27,20 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   @override
   void initState() {
     super.initState();
-    // In a real app, these values would be loaded from user preferences (e.g., SharedPreferences).
+    _loadSettings();
+  }
+
+  Future<void> _loadSettings() async {
+    final settings = await _storageService.getNotificationSettings();
+    setState(() {
+      _workoutNotifications = settings['workoutEnabled'];
+      _workoutTime = settings['workoutTime'];
+      _mealNotifications = settings['mealEnabled'];
+      _mealTime = settings['mealTime'];
+      _waterNotifications = settings['waterEnabled'];
+      _waterTime = settings['waterTime'];
+      _isLoading = false;
+    });
   }
 
   Future<void> _selectTime(BuildContext context, TimeOfDay initialTime,
@@ -32,11 +50,24 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       initialTime: initialTime,
     );
     if (picked != null && picked != initialTime) {
-      onTimeChanged(picked);
+      setState(() {
+        onTimeChanged(picked);
+      });
     }
   }
 
-  void _scheduleNotifications() {
+  Future<void> _saveAndScheduleNotifications() async {
+    // Save settings to local storage
+    await _storageService.saveNotificationSettings(
+      workoutEnabled: _workoutNotifications,
+      workoutTime: _workoutTime,
+      mealEnabled: _mealNotifications,
+      mealTime: _mealTime,
+      waterEnabled: _waterNotifications,
+      waterTime: _waterTime,
+    );
+
+    // Schedule the notifications based on the new settings
     final scheduler = ref.read(notificationSchedulerProvider);
     scheduler.cancelAllReminders(); // Clear old reminders first
 
@@ -44,17 +75,17 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       scheduler.scheduleWorkoutReminder(Time(hour: _workoutTime.hour, minute: _workoutTime.minute));
     }
     if (_mealNotifications) {
-      // For simplicity, we schedule a generic "lunch" reminder.
-      // A full implementation might schedule reminders for each meal time.
       scheduler.scheduleMealReminder("Lunch", Time(hour: _mealTime.hour, minute: _mealTime.minute));
     }
     if (_waterNotifications) {
       scheduler.scheduleWaterReminder(Time(hour: _waterTime.hour, minute: _waterTime.minute));
     }
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Notification settings saved!')),
-    );
+    if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Notification settings saved!')),
+      );
+    }
   }
 
   @override
@@ -65,45 +96,47 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.save),
-            onPressed: _scheduleNotifications,
+            onPressed: _saveAndScheduleNotifications,
             tooltip: 'Save Settings',
           )
         ],
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(16.0),
-        children: [
-          Text('Notification Settings', style: Theme.of(context).textTheme.titleLarge),
-          const SizedBox(height: 16),
-          _buildNotificationSwitch(
-            title: 'Workout Reminders',
-            value: _workoutNotifications,
-            onChanged: (val) => setState(() => _workoutNotifications = val),
-            time: _workoutTime,
-            onTimeTap: () => _selectTime(context, _workoutTime, (newTime) {
-              setState(() => _workoutTime = newTime);
-            }),
-          ),
-          _buildNotificationSwitch(
-            title: 'Meal Reminders',
-            value: _mealNotifications,
-            onChanged: (val) => setState(() => _mealNotifications = val),
-            time: _mealTime,
-            onTimeTap: () => _selectTime(context, _mealTime, (newTime) {
-              setState(() => _mealTime = newTime);
-            }),
-          ),
-          _buildNotificationSwitch(
-            title: 'Water Reminders',
-            value: _waterNotifications,
-            onChanged: (val) => setState(() => _waterNotifications = val),
-            time: _waterTime,
-            onTimeTap: () => _selectTime(context, _waterTime, (newTime) {
-              setState(() => _waterTime = newTime);
-            }),
-          ),
-        ],
-      ),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : ListView(
+              padding: const EdgeInsets.all(16.0),
+              children: [
+                Text('Notification Settings', style: Theme.of(context).textTheme.titleLarge),
+                const SizedBox(height: 16),
+                _buildNotificationSwitch(
+                  title: 'Workout Reminders',
+                  value: _workoutNotifications,
+                  onChanged: (val) => setState(() => _workoutNotifications = val),
+                  time: _workoutTime,
+                  onTimeTap: () => _selectTime(context, _workoutTime, (newTime) {
+                    _workoutTime = newTime;
+                  }),
+                ),
+                _buildNotificationSwitch(
+                  title: 'Meal Reminders',
+                  value: _mealNotifications,
+                  onChanged: (val) => setState(() => _mealNotifications = val),
+                  time: _mealTime,
+                  onTimeTap: () => _selectTime(context, _mealTime, (newTime) {
+                    _mealTime = newTime;
+                  }),
+                ),
+                _buildNotificationSwitch(
+                  title: 'Water Reminders',
+                  value: _waterNotifications,
+                  onChanged: (val) => setState(() => _waterNotifications = val),
+                  time: _waterTime,
+                  onTimeTap: () => _selectTime(context, _waterTime, (newTime) {
+                    _waterTime = newTime;
+                  }),
+                ),
+              ],
+            ),
     );
   }
 
@@ -124,9 +157,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           child: Text(
             time.format(context),
             style: TextStyle(
-              color: value
-                  ? Theme.of(context).colorScheme.primary
-                  : Colors.grey,
+              color: value ? Theme.of(context).colorScheme.primary : Colors.grey,
             ),
           ),
         ),

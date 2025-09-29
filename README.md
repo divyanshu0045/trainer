@@ -46,19 +46,73 @@ Follow these instructions to get the project up and running on your local machin
 
 3.  **Firebase Setup**:
     - Go to the [Firebase Console](https://console.firebase.google.com/) and create a new project.
-    - Add an Android app with the package name `com.fitai.app`.
+
+    ### a. Android Setup
+    - In the Firebase Console, add an Android app with the package name `com.fitai.app`.
     - For Google Sign-In, get your SHA-1 key by running `cd android && ./gradlew signingReport` in your project terminal. Add the `SHA1` value from the `debug` variant to the Firebase console.
     - Download the `google-services.json` file and place it in the `android/app/` directory.
       > **IMPORTANT**: The `google-services.json` file is **mandatory** for the app to connect to Firebase. The application will fail to build or run without it.
     - **Update Package Name**: Open the `android/app/build.gradle` file. Find the `applicationId` inside the `defaultConfig` block and change its value to `"com.fitai.app"` to match your `google-services.json`.
-    - In the Firebase console, enable **Authentication** (Email/Password & Google) and **Firestore Database** (start in test mode).
 
-4.  **Install Dependencies**:
+    ### b. iOS Setup (Requires a Mac)
+    - In the Firebase Console, add an iOS app with the bundle ID `com.fitai.app`.
+    - Download the `GoogleService-Info.plist` file.
+    - Open the `ios/Runner.xcworkspace` file in Xcode.
+    - Drag and drop the `GoogleService-Info.plist` file into the `Runner/Runner` directory within Xcode. Ensure you select "Copy items if needed" when prompted.
+    - **Push Notifications**: To enable push notifications on iOS, you must configure APNs (Apple Push Notification service). This involves creating an APNs key in your Apple Developer account and uploading it to the Firebase console under Project Settings > Cloud Messaging.
+    - **Update Bundle Identifier**: In Xcode, select the `Runner` project, go to the "General" tab, and ensure the "Bundle Identifier" under "Identity" is set to `com.fitai.app`.
+
+    ### c. Enable Firebase Services (For Both Platforms)
+    - In the Firebase console, enable **Authentication** (Email/Password & Google) and **Firestore Database** (start in test mode).
+    - **Secure Your Database**: The `firestore.rules` file in the root directory contains rules to protect user data. To deploy them, run the following command from the project root:
+      ```bash
+      firebase deploy --only firestore:rules
+      ```
+
+4.  **Backend Cloud Function Setup**:
+    This project includes a Firebase Cloud Function to automatically adjust user plans based on their feedback. To deploy it, you need the Firebase CLI.
+
+    a. **Install Firebase CLI**: If you don't have it, install it globally:
+       ```bash
+       npm install -g firebase-tools
+       ```
+
+    b. **Login to Firebase**:
+       ```bash
+       firebase login
+       ```
+
+    c. **Navigate to the functions directory**:
+       ```bash
+       cd functions
+       ```
+
+    d. **Install dependencies**:
+       ```bash
+       npm install
+       ```
+
+    e. **Set OpenAI API Key**: For security, the function retrieves your API key from the environment configuration. Set it by running this command from the `functions` directory:
+       ```bash
+       firebase functions:config:set openai.key="YOUR_OPENAI_API_KEY"
+       ```
+
+    f. **Deploy the function**:
+       ```bash
+       firebase deploy --only functions
+       ```
+
+    g. **Navigate back to the root directory**:
+        ```bash
+        cd ..
+        ```
+
+5.  **Install Dependencies**:
     ```bash
     flutter pub get
     ```
 
-5.  **Run the App**:
+6.  **Run the App**:
     - Connect a device or start an emulator and run the app:
     ```bash
     flutter run
@@ -90,6 +144,12 @@ Follow these instructions to get the project up and running on your local machin
     - Click the floating action button to open the `ChatAssistantScreen`.
     - Type a message and send it. You should receive a **live response** from the AI assistant.
 
+6.  **Test AI Plan Adjustment**:
+    - After using the app for a while, navigate to the `FollowUpScreen` (Note: a button for this screen would need to be added to the UI, e.g., in the Profile or Settings screen).
+    - Submit feedback.
+    - Check the Firebase Cloud Functions logs to see the `adjustPlanOnFeedback` function trigger and execute.
+    - Check your `workoutPlans` and `mealPlans` collections in Firestore to verify that the data has been updated by the function.
+
 ---
 
 ## 📦 Building the App for Release
@@ -115,3 +175,25 @@ flutter build apk
 ```
 
 The output file will be located at `build/app/outputs/flutter-apk/app-release.apk`.
+
+---
+
+## 🎨 Asset Generation
+
+After changing the placeholder images in `assets/images/` (`icon.png` and `splash.png`), you must run the following commands from the project root to apply your new app icon and splash screen.
+
+### Generate App Icon
+
+This command will generate all the necessary app icons for Android and iOS.
+
+```bash
+flutter pub run flutter_launcher_icons:main
+```
+
+### Generate Splash Screen
+
+This command will create the native splash screens.
+
+```bash
+flutter pub run flutter_native_splash:create
+```
