@@ -31,7 +31,20 @@ Follow these instructions to get the project up and running on your local machin
 
 ### Setup and Running
 
-1.  **Firebase Setup**:
+1.  **Clone the Repository**:
+    ```bash
+    git clone <repository-url>
+    cd fit_ai
+    ```
+
+2.  **Generate Native Project Files (Crucial First Step)**:
+    This project contains only the cross-platform Dart code. You must generate the native `android` and `ios` project files yourself. Run the following command from the root of the project directory:
+    ```bash
+    flutter create .
+    ```
+    This will safely create the necessary native project folders without overwriting any of the existing Dart code.
+
+3.  **Firebase Setup**:
     - Go to the [Firebase Console](https://console.firebase.google.com/) and create a new project.
     - Add an Android app with the package name `com.fitai.app`.
     - For Google Sign-In, get your SHA-1 key by running `cd android && ./gradlew signingReport` in your project terminal. Add the `SHA1` value from the `debug` variant to the Firebase console.
@@ -40,18 +53,12 @@ Follow these instructions to get the project up and running on your local machin
     - **Update Package Name**: Open the `android/app/build.gradle` file. Find the `applicationId` inside the `defaultConfig` block and change its value to `"com.fitai.app"` to match your `google-services.json`.
     - In the Firebase console, enable **Authentication** (Email/Password & Google) and **Firestore Database** (start in test mode).
 
-2.  **Clone the Repository**:
-    ```bash
-    git clone <repository-url>
-    cd fit_ai
-    ```
-
-3.  **Install Dependencies**:
+4.  **Install Dependencies**:
     ```bash
     flutter pub get
     ```
 
-4.  **Run the App**:
+5.  **Run the App**:
     - Connect a device or start an emulator and run the app:
     ```bash
     flutter run
