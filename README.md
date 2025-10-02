@@ -35,7 +35,7 @@ There are two ways to set up the project: the easy automated script or the detai
 
 #### Option 1: Automated Setup (Recommended)
 
-The `setup.sh` script automates all the necessary steps, including creating the Firebase project, configuring apps, and installing dependencies.
+The `setup.sh` script automates the initial, non-interactive steps (like creating the Firebase project) and then provides you with a clear, copy-pasteable list of the final commands to run. This is the most reliable way to set up the project.
 
 1.  **Clone the Repository**:
     ```bash
@@ -48,15 +48,15 @@ The `setup.sh` script automates all the necessary steps, including creating the 
     chmod +x setup.sh
     ```
 
-3.  **Run the script**:
+3.  **Run the initial setup script**:
     ```bash
     ./setup.sh
     ```
-    The script will prompt you for your desired **Firebase Project ID** and your **OpenAI API Key**. It will then pause for interactive input during the `firebase init` step—the script itself will print clear instructions on what to select.
+    The script will prompt you for your desired **Firebase Project ID** and your **OpenAI API Key**. It will then perform the initial setup and print a list of commands for you to run next.
 
-4.  **Run the App**:
-    - Once the script is finished, complete the final manual steps it provides (enabling auth methods in the Firebase Console).
-    - Then, run the app:
+4.  **Run the Final Manual Commands**:
+    - After the script finishes, copy and paste the commands it provides into your terminal one by one. This will include the interactive `firebase init` step and all necessary deployments.
+    - Once all commands are complete, run the app:
     ```bash
     flutter run
     ```

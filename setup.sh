@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# A script to automate the setup of the FitAI Flutter project.
+# A script to perform the initial, non-interactive setup of the FitAI Flutter project.
 
 # --- Helper Functions ---
 print_color() {
@@ -11,8 +11,9 @@ print_color() {
 
 # --- Main Script ---
 
-print_color "36" "--- FitAI Flutter App Setup Script ---"
-echo "This script will guide you through setting up the necessary Firebase project and local configuration."
+print_color "36" "--- FitAI Flutter App Initial Setup Script ---"
+echo "This script will perform the initial non-interactive setup steps."
+echo "It will then provide you with the final commands to run manually."
 echo
 
 # 1. Check Dependencies
@@ -42,18 +43,18 @@ read -sp "Enter your OpenAI API Key (it will not be displayed): " OPENAI_API_KEY
 echo
 echo
 
-# 3. Execute Setup Commands
-print_color "33" "Step 1/9: Generating native Flutter project files..."
+# 3. Execute Non-Interactive Setup Commands
+print_color "33" "Step 1/3: Generating native Flutter project files..."
 flutter create .
 print_color "32" "✓ Flutter project files generated."
 echo
 
-print_color "33" "Step 2/9: Logging into Firebase..."
+print_color "33" "Step 2/3: Logging into Firebase..."
 firebase login
 print_color "32" "✓ Firebase login complete."
 echo
 
-print_color "33" "Step 3/9: Creating Firebase project '$FIREBASE_PROJECT_ID'..."
+print_color "33" "Step 3/3: Creating Firebase project '$FIREBASE_PROJECT_ID'..."
 firebase projects:create $FIREBASE_PROJECT_ID --display-name "FitAI App"
 if [ $? -ne 0 ]; then
     print_color "31" "Error: Failed to create Firebase project. It might already exist or there was a network issue."
@@ -62,54 +63,37 @@ fi
 print_color "32" "✓ Firebase project created successfully."
 echo
 
-print_color "33" "Step 4/9: Initializing Firebase in this project..."
-print_color "36" "The next step is interactive. Please make the following selections:"
-print_color "36" "  - Are you ready to proceed? > Press Enter"
-print_color "36" "  - Which Firebase features? > Use arrows and spacebar to select 'Firestore' and 'Functions'."
-print_color "36" "  - Please select an option: > Use an existing project"
-print_color "36" "  - Select a default Firebase project: > Select the project you just created ($FIREBASE_PROJECT_ID)."
-print_color "36" "  - What file should be used for Firestore Rules? > Press Enter (firestore.rules)"
-print_color "36" "  - What language for Cloud Functions? > JavaScript"
-print_color "36" "  - Use ESLint? > Yes"
-print_color "36" "  - Install dependencies with npm now? > Yes"
-firebase init
-print_color "32" "✓ Firebase project initialized."
-echo
-
-print_color "33" "Step 5/9: Creating Android app and configuration..."
-firebase apps:create android com.fitai.app --project=$FIREBASE_PROJECT_ID
-firebase apps:sdkconfig android -o android/app/google-services.json --project=$FIREBASE_PROJECT_ID
-print_color "32" "✓ Android app created and configured."
-echo
-
-print_color "33" "Step 6/9: Creating iOS app and configuration..."
-firebase apps:create ios com.fitai.app --project=$FIREBASE_PROJECT_ID
-firebase apps:sdkconfig ios -o ios/Runner/GoogleService-Info.plist --project=$FIREBASE_PROJECT_ID
-print_color "32" "✓ iOS app created and configured."
-echo
-
-print_color "33" "Step 7/9: Setting OpenAI API Key for backend function..."
-firebase functions:config:set openai.key="$OPENAI_API_KEY" --project=$FIREBASE_PROJECT_ID
-print_color "32" "✓ OpenAI API Key configured for the backend."
-echo
-
-print_color "33" "Step 8/9: Installing Flutter app dependencies..."
-flutter pub get
-print_color "32" "✓ Flutter dependencies installed."
-echo
-
-print_color "33" "Step 9/9: Deploying Firestore security rules..."
-firebase deploy --only firestore:rules --project=$FIREBASE_PROJECT_ID
-print_color "32" "✓ Firestore security rules deployed."
-echo
-
 # 4. Final Instructions
-print_color "36" "--- ✅ Automatic Setup Complete! ---"
+print_color "36" "--- ✅ Initial Setup Complete! ---"
 echo
-print_color "33" "Two final manual steps are required:"
-echo "1. Go to your new project in the Firebase Console: https://console.firebase.google.com/project/$FIREBASE_PROJECT_ID"
-echo "2. In the left-hand menu, go to 'Authentication' > 'Sign-in method' and enable 'Email/Password' and 'Google'."
-echo "3. Go to 'Firestore Database' and create a database if one wasn't created during 'init'."
+print_color "33" "Please run the following commands manually, one by one, to complete the setup."
 echo
-print_color "32" "After completing the manual steps, you can deploy the backend functions with 'firebase deploy --only functions' and run the app with 'flutter run'."
+print_color "32" "# 1. Initialize Firebase in your project (this is interactive)"
+echo "firebase init"
+echo "#  -> When prompted, select 'Use an existing project' and choose '$FIREBASE_PROJECT_ID'."
+echo "#  -> Select 'Firestore' and 'Functions'."
+echo "#  -> Accept the defaults for the rules file, language (JavaScript), and ESLint."
+echo
+print_color "32" "# 2. Create the Android and iOS apps"
+echo "firebase apps:create android com.fitai.app --project=$FIREBASE_PROJECT_ID"
+echo "firebase apps:sdkconfig android -o android/app/google-services.json --project=$FIREBASE_PROJECT_ID"
+echo "firebase apps:create ios com.fitai.app --project=$FIREBASE_PROJECT_ID"
+echo "firebase apps:sdkconfig ios -o ios/Runner/GoogleService-Info.plist --project=$FIREBASE_PROJECT_ID"
+echo
+print_color "32" "# 3. Set your OpenAI API Key for the backend function"
+echo "firebase functions:config:set openai.key=\"$OPENAI_API_KEY\" --project=$FIREBASE_PROJECT_ID"
+echo
+print_color "32" "# 4. Install all dependencies"
+echo "(cd functions && npm install)"
+echo "flutter pub get"
+echo
+print_color "32" "# 5. Deploy your backend rules and functions"
+echo "firebase deploy --only firestore:rules --project=$FIREBASE_PROJECT_ID"
+echo "firebase deploy --only functions --project=$FIREBASE_PROJECT_ID"
+echo
+print_color "33" "After running these commands, you have two final manual steps in the Firebase Console:"
+echo "1. Go to your project: https://console.firebase.google.com/project/$FIREBASE_PROJECT_ID"
+echo "2. Enable Authentication: Go to 'Authentication' > 'Sign-in method' and enable 'Email/Password' and 'Google'."
+echo
+print_color "32" "Once all steps are complete, you can run the app with 'flutter run'."
 echo
