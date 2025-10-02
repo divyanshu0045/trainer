@@ -62,21 +62,30 @@ fi
 print_color "32" "✓ Firebase project created successfully."
 echo
 
-print_color "33" "Step 4/9: Creating Android app and configuration..."
+print_color "33" "Step 4/9: Initializing Firebase in this project..."
+print_color "36" "The next step is interactive. Please make the following selections:"
+print_color "36" "  - Are you ready to proceed? > Press Enter"
+print_color "36" "  - Which Firebase features? > Use arrows and spacebar to select 'Firestore' and 'Functions'."
+print_color "36" "  - Please select an option: > Use an existing project"
+print_color "36" "  - Select a default Firebase project: > Select the project you just created ($FIREBASE_PROJECT_ID)."
+print_color "36" "  - What file should be used for Firestore Rules? > Press Enter (firestore.rules)"
+print_color "36" "  - What language for Cloud Functions? > JavaScript"
+print_color "36" "  - Use ESLint? > Yes"
+print_color "36" "  - Install dependencies with npm now? > Yes"
+firebase init
+print_color "32" "✓ Firebase project initialized."
+echo
+
+print_color "33" "Step 5/9: Creating Android app and configuration..."
 firebase apps:create android com.fitai.app --project=$FIREBASE_PROJECT_ID
 firebase apps:sdkconfig android -o android/app/google-services.json --project=$FIREBASE_PROJECT_ID
 print_color "32" "✓ Android app created and configured."
 echo
 
-print_color "33" "Step 5/9: Creating iOS app and configuration..."
+print_color "33" "Step 6/9: Creating iOS app and configuration..."
 firebase apps:create ios com.fitai.app --project=$FIREBASE_PROJECT_ID
 firebase apps:sdkconfig ios -o ios/Runner/GoogleService-Info.plist --project=$FIREBASE_PROJECT_ID
 print_color "32" "✓ iOS app created and configured."
-echo
-
-print_color "33" "Step 6/9: Installing backend function dependencies..."
-(cd functions && npm install)
-print_color "32" "✓ Backend dependencies installed."
 echo
 
 print_color "33" "Step 7/9: Setting OpenAI API Key for backend function..."
@@ -100,7 +109,7 @@ echo
 print_color "33" "Two final manual steps are required:"
 echo "1. Go to your new project in the Firebase Console: https://console.firebase.google.com/project/$FIREBASE_PROJECT_ID"
 echo "2. In the left-hand menu, go to 'Authentication' > 'Sign-in method' and enable 'Email/Password' and 'Google'."
-echo "3. Go to 'Firestore Database' and create a database. Start in 'test mode'."
+echo "3. Go to 'Firestore Database' and create a database if one wasn't created during 'init'."
 echo
 print_color "32" "After completing the manual steps, you can deploy the backend functions with 'firebase deploy --only functions' and run the app with 'flutter run'."
 echo

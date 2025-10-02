@@ -52,7 +52,7 @@ The `setup.sh` script automates all the necessary steps, including creating the 
     ```bash
     ./setup.sh
     ```
-    The script will prompt you for your desired **Firebase Project ID** and your **OpenAI API Key**. Follow the on-screen instructions.
+    The script will prompt you for your desired **Firebase Project ID** and your **OpenAI API Key**. It will then pause for interactive input during the `firebase init` step—the script itself will print clear instructions on what to select.
 
 4.  **Run the App**:
     - Once the script is finished, complete the final manual steps it provides (enabling auth methods in the Firebase Console).
