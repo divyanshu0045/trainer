@@ -44,27 +44,49 @@ Follow these instructions to get the project up and running on your local machin
     ```
     This will safely create the necessary native project folders without overwriting any of the existing Dart code.
 
-3.  **Firebase Setup**:
-    - Go to the [Firebase Console](https://console.firebase.google.com/) and create a new project.
+3.  **Firebase Setup (CLI-First Method)**:
+    This guide uses the Firebase CLI for a faster and more reproducible setup.
 
-    ### a. Android Setup
-    - In the Firebase Console, add an Android app with the package name `com.fitai.app`.
-    - For Google Sign-In, get your SHA-1 key by running `cd android && ./gradlew signingReport` in your project terminal. Add the `SHA1` value from the `debug` variant to the Firebase console.
-    - Download the `google-services.json` file and place it in the `android/app/` directory.
-      > **IMPORTANT**: The `google-services.json` file is **mandatory** for the app to connect to Firebase. The application will fail to build or run without it.
-    - **Update Package Name**: Open the `android/app/build.gradle` file. Find the `applicationId` inside the `defaultConfig` block and change its value to `"com.fitai.app"` to match your `google-services.json`.
+    a. **Install Firebase CLI**: If you don't have it, install it globally:
+       ```bash
+       npm install -g firebase-tools
+       ```
 
-    ### b. iOS Setup (Requires a Mac)
-    - In the Firebase Console, add an iOS app with the bundle ID `com.fitai.app`.
-    - Download the `GoogleService-Info.plist` file.
-    - Open the `ios/Runner.xcworkspace` file in Xcode.
-    - Drag and drop the `GoogleService-Info.plist` file into the `Runner/Runner` directory within Xcode. Ensure you select "Copy items if needed" when prompted.
-    - **Push Notifications**: To enable push notifications on iOS, you must configure APNs (Apple Push Notification service). This involves creating an APNs key in your Apple Developer account and uploading it to the Firebase console under Project Settings > Cloud Messaging.
-    - **Update Bundle Identifier**: In Xcode, select the `Runner` project, go to the "General" tab, and ensure the "Bundle Identifier" under "Identity" is set to `com.fitai.app`.
+    b. **Login to Firebase**:
+       ```bash
+       firebase login
+       ```
 
-    ### c. Enable Firebase Services (For Both Platforms)
-    - In the Firebase console, enable **Authentication** (Email/Password & Google) and **Firestore Database** (start in test mode).
-    - **Secure Your Database**: The `firestore.rules` file in the root directory contains rules to protect user data. To deploy them, run the following command from the project root:
+    c. **Create Firebase Project**: Run the following command. Replace `your-project-id-here` with a unique ID for your project.
+       ```bash
+       firebase projects:create your-project-id-here --display-name "FitAI App"
+       ```
+
+    d. **Set the project**: Tell the CLI which project you're working with.
+       ```bash
+       firebase use your-project-id-here
+       ```
+
+    e. **Create Android App & Get Config**:
+       ```bash
+       firebase apps:create android com.fitai.app
+       firebase apps:sdkconfig android -o android/app/google-services.json
+       ```
+       > **Note**: After running `flutter create .`, the `applicationId` in `android/app/build.gradle` might be different. Ensure it is set to `com.fitai.app` to match this setup.
+
+    f. **Create iOS App & Get Config (Requires a Mac)**:
+       ```bash
+       firebase apps:create ios com.fitai.app
+       firebase apps:sdkconfig ios -o ios/Runner/GoogleService-Info.plist
+       ```
+       > **Note**: After running `flutter create .`, open `ios/Runner.xcworkspace` in Xcode and ensure the "Bundle Identifier" is set to `com.fitai.app`.
+
+    g. **Enable Firebase Services (Manual Step)**:
+       This part is still easiest via the web console. Go to your new project in the [Firebase Console](https://console.firebase.google.com/):
+       - In the left-hand menu, go to **Authentication** > **Sign-in method** and enable **Email/Password** and **Google**.
+       - Go to **Firestore Database** and create a database. Start in **test mode** for easy setup.
+
+    h. **Secure Your Database**: The `firestore.rules` file in the root directory contains rules to protect user data. To deploy them, run the following command from the project root:
       ```bash
       firebase deploy --only firestore:rules
       ```
