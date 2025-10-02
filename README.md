@@ -31,6 +31,42 @@ Follow these instructions to get the project up and running on your local machin
 
 ### Setup and Running
 
+There are two ways to set up the project: the easy automated script or the detailed manual process.
+
+#### Option 1: Automated Setup (Recommended)
+
+The `setup.sh` script automates all the necessary steps, including creating the Firebase project, configuring apps, and installing dependencies.
+
+1.  **Clone the Repository**:
+    ```bash
+    git clone <repository-url>
+    cd fit_ai
+    ```
+
+2.  **Make the script executable**:
+    ```bash
+    chmod +x setup.sh
+    ```
+
+3.  **Run the script**:
+    ```bash
+    ./setup.sh
+    ```
+    The script will prompt you for your desired **Firebase Project ID** and your **OpenAI API Key**. Follow the on-screen instructions.
+
+4.  **Run the App**:
+    - Once the script is finished, complete the final manual steps it provides (enabling auth methods in the Firebase Console).
+    - Then, run the app:
+    ```bash
+    flutter run
+    ```
+    - On the first launch, you will be prompted to enter your OpenAI API key.
+
+#### Option 2: Manual Setup
+
+<details>
+<summary>Click to view detailed manual setup instructions</summary>
+
 1.  **Clone the Repository**:
     ```bash
     git clone <repository-url>
@@ -57,15 +93,19 @@ Follow these instructions to get the project up and running on your local machin
        firebase login
        ```
 
-    c. **Create Firebase Project**: Run the following command. Replace `your-project-id-here` with a unique ID for your project.
+    c. **Create Firebase Project**: Run the following command to create a new Firebase project. Replace `fitai-app-xxxx` with a unique, valid project ID (6-30 lowercase letters, numbers, and hyphens).
        ```bash
-       firebase projects:create your-project-id-here --display-name "FitAI App"
+       firebase projects:create fitai-app-xxxx --display-name "FitAI App"
        ```
 
-    d. **Set the project**: Tell the CLI which project you're working with.
-       ```bash
-       firebase use your-project-id-here
-       ```
+    d. **Initialize Firebase in your project**: From the root of your project directory, run:
+        ```bash
+        firebase init
+        ```
+        - When prompted, select **"Use an existing project"** and choose the project you just created (`fitai-app-xxxx`).
+        - Select the services you want to set up: **Firestore** and **Functions**.
+        - For Firestore, accept the default rules file (`firestore.rules`).
+        - For Functions, choose JavaScript, accept the defaults for ESLint, and agree to install dependencies with npm. This will link your local `functions` directory to the Firebase project.
 
     e. **Create Android App & Get Config**:
        ```bash
@@ -94,40 +134,15 @@ Follow these instructions to get the project up and running on your local machin
 4.  **Backend Cloud Function Setup**:
     This project includes a Firebase Cloud Function to automatically adjust user plans based on their feedback. To deploy it, you need the Firebase CLI.
 
-    a. **Install Firebase CLI**: If you don't have it, install it globally:
-       ```bash
-       npm install -g firebase-tools
-       ```
-
-    b. **Login to Firebase**:
-       ```bash
-       firebase login
-       ```
-
-    c. **Navigate to the functions directory**:
-       ```bash
-       cd functions
-       ```
-
-    d. **Install dependencies**:
-       ```bash
-       npm install
-       ```
-
-    e. **Set OpenAI API Key**: For security, the function retrieves your API key from the environment configuration. Set it by running this command from the `functions` directory:
+    a. **Set OpenAI API Key**: For security, the function retrieves your API key from the environment configuration. Set it by running this command from the `functions` directory:
        ```bash
        firebase functions:config:set openai.key="YOUR_OPENAI_API_KEY"
        ```
 
-    f. **Deploy the function**:
+    b. **Deploy the function**:
        ```bash
        firebase deploy --only functions
        ```
-
-    g. **Navigate back to the root directory**:
-        ```bash
-        cd ..
-        ```
 
 5.  **Install Dependencies**:
     ```bash
@@ -140,6 +155,7 @@ Follow these instructions to get the project up and running on your local machin
     flutter run
     ```
     - On the first launch, you will be prompted to enter your OpenAI API key.
+</details>
 
 ---
 
