@@ -73,7 +73,7 @@ void main() {
       // Act
       await tester.enterText(find.byType(TextFormField), validApiKey);
       await tester.tap(find.byType(ElevatedButton));
-      await tester.pump();
+      await tester.pumpAndSettle();
 
       // Assert
       verify(mockApiKeyNotifier.saveApiKey(validApiKey)).called(1);

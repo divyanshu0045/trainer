@@ -1,20 +1,26 @@
+import 'package:fit_ai/models/time_model.dart';
+import 'package:fit_ai/providers/notification_provider.dart';
 import 'package:fit_ai/screens/settings_screen.dart';
 import 'package:fit_ai/services/storage_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-// Mocks
-class MockStorageService extends Mock implements StorageService {}
+import 'settings_screen_test.mocks.dart';
 
+@GenerateMocks([StorageService, NotificationScheduler])
 void main() {
   group('SettingsScreen Widget Tests', () {
     late MockStorageService mockStorageService;
+    late MockNotificationScheduler mockNotificationScheduler;
 
     setUp(() {
       mockStorageService = MockStorageService();
+      mockNotificationScheduler = MockNotificationScheduler();
+
       // Provide default mock values for SharedPreferences
       SharedPreferences.setMockInitialValues({
         'workout_enabled': true,
@@ -27,71 +33,105 @@ void main() {
         'water_hour': 10,
         'water_minute': 0,
       });
+
+      // Mock the getNotificationSettings method
+      when(mockStorageService.getNotificationSettings()).thenAnswer((_) async => {
+            'workoutEnabled': true,
+            'workoutTime': const TimeOfDay(hour: 8, minute: 0),
+            'mealEnabled': true,
+            'mealTime': const TimeOfDay(hour: 12, minute: 30),
+            'waterEnabled': false,
+            'waterTime': const TimeOfDay(hour: 10, minute: 0),
+          });
     });
 
     // Helper to build the widget for testing
     Widget createWidgetUnderTest() {
       return ProviderScope(
-        // We don't need to override anything here since the screen creates its own
-        // StorageService instance. A refactor could inject this for easier mocking.
-        child: const MaterialApp(
-          home: SettingsScreen(),
+        overrides: [
+          storageServiceProvider.overrideWithValue(mockStorageService),
+          notificationSchedulerProvider
+              .overrideWithValue(mockNotificationScheduler),
+        ],
+        child: MaterialApp(
+          home: SettingsScreen(storageService: mockStorageService),
         ),
       );
     }
 
-    testWidgets('loads and displays initial settings correctly', (WidgetTester tester) async {
+    testWidgets('loads and displays initial settings correctly',
+        (WidgetTester tester) async {
       await tester.pumpWidget(createWidgetUnderTest());
-
-      // Let the initial loading future complete
       await tester.pumpAndSettle();
 
-      // Verify that the switches are set according to the mock values
-      final workoutSwitch = find.widgetWithText(SwitchListTile, 'Workout Reminders');
-      final mealSwitch = find.widgetWithText(SwitchListTile, 'Meal Reminders');
-      final waterSwitch = find.widgetWithText(SwitchListTile, 'Water Reminders');
+      final workoutSwitch =
+          find.widgetWithText(SwitchListTile, 'Workout Reminders');
+      final mealSwitch =
+          find.widgetWithText(SwitchListTile, 'Meal Reminders');
+      final waterSwitch =
+          find.widgetWithText(SwitchListTile, 'Water Reminders');
 
       expect(tester.widget<SwitchListTile>(workoutSwitch).value, isTrue);
       expect(tester.widget<SwitchListTile>(mealSwitch).value, isTrue);
       expect(tester.widget<SwitchListTile>(waterSwitch).value, isFalse);
 
-      // Verify that the times are displayed correctly
       expect(find.text('8:00 AM'), findsOneWidget);
       expect(find.text('12:30 PM'), findsOneWidget);
     });
 
-    testWidgets('allows toggling a notification switch', (WidgetTester tester) async {
+    testWidgets('allows toggling a notification switch',
+        (WidgetTester tester) async {
       await tester.pumpWidget(createWidgetUnderTest());
       await tester.pumpAndSettle();
 
-      // Find the workout switch and verify its initial state
-      final workoutSwitch = find.widgetWithText(SwitchListTile, 'Workout Reminders');
+      final workoutSwitch =
+          find.widgetWithText(SwitchListTile, 'Workout Reminders');
       expect(tester.widget<SwitchListTile>(workoutSwitch).value, isTrue);
 
-      // Tap the switch to turn it off
       await tester.tap(workoutSwitch);
       await tester.pump();
 
-      // Verify its state has changed
       expect(tester.widget<SwitchListTile>(workoutSwitch).value, isFalse);
     });
 
-    testWidgets('save button calls the storage service', (WidgetTester tester) async {
-      // This test is more complex because the service is instantiated directly.
-      // A full test would require refactoring to inject the service.
-      // This test serves as a placeholder for that more advanced implementation.
+    testWidgets('save button calls the storage and notification services',
+        (WidgetTester tester) async {
+      when(mockStorageService.saveNotificationSettings(
+        workoutEnabled: anyNamed('workoutEnabled'),
+        workoutTime: anyNamed('workoutTime'),
+        mealEnabled: anyNamed('mealEnabled'),
+        mealTime: anyNamed('mealTime'),
+        waterEnabled: anyNamed('waterEnabled'),
+        waterTime: anyNamed('waterTime'),
+      )).thenAnswer((_) async {});
+      when(mockNotificationScheduler.cancelAllReminders())
+          .thenAnswer((_) async {});
+      when(mockNotificationScheduler.scheduleWorkoutReminder(any))
+          .thenAnswer((_) async {});
+      when(mockNotificationScheduler.scheduleMealReminder(any, any))
+          .thenAnswer((_) async {});
 
       await tester.pumpWidget(createWidgetUnderTest());
       await tester.pumpAndSettle();
 
-      // Tap the save button
       await tester.tap(find.byIcon(Icons.save));
-      await tester.pump();
+      await tester.pumpAndSettle();
 
-      // In a real test with injection, we would verify:
-      // verify(mockStorageService.saveNotificationSettings(any)).called(1);
+      verify(mockStorageService.saveNotificationSettings(
+        workoutEnabled: true,
+        workoutTime: const TimeOfDay(hour: 8, minute: 0),
+        mealEnabled: true,
+        mealTime: const TimeOfDay(hour: 12, minute: 30),
+        waterEnabled: false,
+        waterTime: const TimeOfDay(hour: 10, minute: 0),
+      )).called(1);
 
-      // For now, we just verify that the snackbar appears, indicating the method was called.
+      verify(mockNotificationScheduler.cancelAllReminders()).called(1);
+      verify(mockNotificationScheduler.scheduleWorkoutReminder(any)).called(1);
+      verify(mockNotificationScheduler.scheduleMealReminder(any, any))
+          .called(1);
+      verifyNever(mockNotificationScheduler.scheduleWaterReminder(any));
+
       expect(find.text('Notification settings saved!'), findsOneWidget);
     });
   });
