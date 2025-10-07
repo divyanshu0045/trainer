@@ -9,7 +9,7 @@ import 'package:mockito/mockito.dart';
 
 import 'profile_screen_test.mocks.dart';
 
-@GenerateMocks([UserDataNotifier])
+@GenerateNiceMocks([MockSpec<UserDataNotifier>()])
 void main() {
   group('ProfileScreen Widget Tests', () {
     late MockUserDataNotifier mockUserDataNotifier;

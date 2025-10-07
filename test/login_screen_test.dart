@@ -9,7 +9,10 @@ import 'package:mockito/mockito.dart';
 
 import 'login_screen_test.mocks.dart';
 
-@GenerateMocks([AuthService, NavigatorObserver])
+@GenerateNiceMocks([
+  MockSpec<AuthService>(),
+  MockSpec<NavigatorObserver>(),
+])
 void main() {
   group('LoginScreen Widget Tests', () {
     late MockAuthService mockAuthService;

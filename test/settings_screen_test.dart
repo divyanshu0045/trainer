@@ -1,5 +1,6 @@
 import 'package:fit_ai/models/time_model.dart';
 import 'package:fit_ai/providers/notification_provider.dart';
+import 'package:fit_ai/providers/storage_provider.dart';
 import 'package:fit_ai/screens/settings_screen.dart';
 import 'package:fit_ai/services/storage_service.dart';
 import 'package:flutter/material.dart';
@@ -11,7 +12,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'settings_screen_test.mocks.dart';
 
-@GenerateMocks([StorageService, NotificationScheduler])
+@GenerateNiceMocks([
+  MockSpec<StorageService>(),
+  MockSpec<NotificationScheduler>(),
+])
 void main() {
   group('SettingsScreen Widget Tests', () {
     late MockStorageService mockStorageService;
@@ -21,7 +25,6 @@ void main() {
       mockStorageService = MockStorageService();
       mockNotificationScheduler = MockNotificationScheduler();
 
-      // Provide default mock values for SharedPreferences
       SharedPreferences.setMockInitialValues({
         'workout_enabled': true,
         'workout_hour': 8,
@@ -34,7 +37,6 @@ void main() {
         'water_minute': 0,
       });
 
-      // Mock the getNotificationSettings method
       when(mockStorageService.getNotificationSettings()).thenAnswer((_) async => {
             'workoutEnabled': true,
             'workoutTime': const TimeOfDay(hour: 8, minute: 0),
@@ -45,7 +47,6 @@ void main() {
           });
     });
 
-    // Helper to build the widget for testing
     Widget createWidgetUnderTest() {
       return ProviderScope(
         overrides: [
