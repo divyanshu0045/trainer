@@ -66,29 +66,17 @@ void main() {
 
     testWidgets('calls saveApiKey when a valid key is entered and button is pressed', (WidgetTester tester) async {
       // Arrange
-      when(mockApiKeyNotifier.saveApiKey(any)).thenAnswer((_) async => {});
-      await tester.pumpWidget(createWidget_with_real_provider());
+      const validApiKey = 'sk-valid-key-12345';
+      when(mockApiKeyNotifier.saveApiKey(validApiKey)).thenAnswer((_) async => {});
+      await tester.pumpWidget(createWidgetUnderTest());
 
       // Act
-      await tester.enterText(find.byType(TextFormField), 'sk-valid-key-12345');
+      await tester.enterText(find.byType(TextFormField), validApiKey);
       await tester.tap(find.byType(ElevatedButton));
       await tester.pump();
 
       // Assert
-      // Here, we would ideally verify that the saveApiKey method was called on our mock.
-      // However, since the provider rebuilds the tree, a more complex setup is needed.
-      // For this test, we confirm no validation errors are shown, implying a successful submission attempt.
-      expect(find.text('Please enter a valid OpenAI API key'), findsNothing);
-      expect(find.text('Please enter your API key'), findsNothing);
+      verify(mockApiKeyNotifier.saveApiKey(validApiKey)).called(1);
     });
   });
-}
-
-// A helper for tests that need a real provider instance
-Widget createWidget_with_real_provider() {
-  return const ProviderScope(
-    child: MaterialApp(
-      home: ApiKeyScreen(),
-    ),
-  );
 }

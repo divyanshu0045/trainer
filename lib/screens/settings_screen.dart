@@ -1,3 +1,4 @@
+import 'package:fit_ai/models/time_model.dart';
 import 'package:fit_ai/providers/notification_provider.dart';
 import 'package:fit_ai/services/storage_service.dart';
 import 'package:flutter/material.dart';

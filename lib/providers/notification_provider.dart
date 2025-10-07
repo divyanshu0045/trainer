@@ -1,5 +1,6 @@
+import 'package:fit_ai/models/time_model.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart' hide Time;
 import '../services/notification_service.dart';
 
 // Provider for the NotificationService instance
