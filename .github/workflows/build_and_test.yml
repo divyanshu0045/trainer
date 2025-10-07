@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - "feat/live-api-integration"
+  pull_request:
+    branches:
+      - "feat/live-api-integration"
 
 jobs:
   build_android:
