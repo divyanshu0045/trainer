@@ -22,7 +22,7 @@ FitAI is a Flutter-based Android application that acts as a personal gym trainer
 
 This project uses GitHub Actions to automate the build and test process. The workflow is defined in `.github/workflows/build_and_test.yml` and includes the following features:
 
-- **Automated Builds**: Every push to the `feat/live-api-integration` branch triggers a new build for Android, iOS, and Web.
+- **Automated Builds**: Every push and pull request to the `feat/live-api-integration` branch triggers a new build for Android, iOS, and Web.
 - **Automated Testing**: The workflow runs all the tests in the `test/` directory to ensure that new changes don't break existing functionality.
 - **Build Artifacts**: The workflow uploads the build artifacts for each platform, so you can easily download and test the latest version of the app.
 

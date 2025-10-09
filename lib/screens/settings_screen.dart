@@ -1,21 +1,18 @@
 import 'package:fit_ai/models/time_model.dart';
 import 'package:fit_ai/providers/notification_provider.dart';
-import 'package:fit_ai/providers/storage_provider.dart';
 import 'package:fit_ai/services/storage_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
-  const SettingsScreen({super.key, this.storageService});
-
-  final StorageService? storageService;
+  const SettingsScreen({super.key});
 
   @override
   _SettingsScreenState createState() => _SettingsScreenState();
 }
 
 class _SettingsScreenState extends ConsumerState<SettingsScreen> {
-  late final StorageService _storageService;
+  final StorageService _storageService = StorageService();
   bool _isLoading = true;
 
   // Default values
@@ -31,7 +28,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   @override
   void initState() {
     super.initState();
-    _storageService = widget.storageService ?? ref.read(storageServiceProvider);
     _loadSettings();
   }
 
